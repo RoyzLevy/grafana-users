@@ -1,0 +1,16 @@
+admin:
+  existingSecret: grafana-admin-secret
+
+service:
+  type: NodePort
+
+image:
+  repository: grafana/grafana
+  tag: "11.5.1"
+
+persistence:
+  enabled: true
+  storageClassName: standard
+  accessModes:
+    - ReadWriteOnce
+  size: 1Gi

@@ -1,0 +1,25 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: grafana-users-provision
+  annotations:
+    "helm.sh/hook": post-install
+    "helm.sh/hook-delete-policy": before-hook-creation
+  namespace: grafana
+spec:
+  template:
+    spec:
+      containers:
+        - name: grafana-users-provision
+          image: grafana-users-provision:latest
+          command: ["/usr/local/bin/grafana-users-provision"]
+          volumeMounts:
+            - name: user-config
+              mountPath: /etc/grafana/users.json
+              subPath: users.json
+      restartPolicy: Never
+      volumes:
+        - name: user-config
+          configMap:
+            name: grafana-user-list
+  backoffLimit: 4

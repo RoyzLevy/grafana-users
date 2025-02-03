@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: grafana-user-list
+  namespace: grafana
+data:
+  users.json: |
+    [
+      { "username": "user1", "role": "Viewer", "email": "user1@example.com", "password": "generatedPassword123!" },
+      { "username": "user2", "role": "Editor", "email": "user2@example.com", "password": "anotherRandomPass456@" },
+      { "username": "user3", "role": "Admin", "email": "user3@example.com", "password": "anotherRandomPass123123@" }
+    ]
