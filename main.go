@@ -17,6 +17,12 @@ type User struct {
 	Password string `json:"password"`
 }
 
+type OrgResponse struct {
+	ID   int    `json:"id"`
+	Name string `json:"name"`
+}
+
+// Main function
 func main() {
 	// Load users.json file from environment variable
 	filePath := "/etc/grafana/users.json"
@@ -33,7 +39,6 @@ func main() {
 	}
 
 	// Set Grafana admin credentials
-	//TODO: get from k8s secret
 	grafanaURL := "grafana:80"
 	adminUser := "admin"
 	adminPass := "mypassword"
@@ -41,13 +46,13 @@ func main() {
 	var orgID int
 
 	// Check if organization exists and if not create it
-	orgExists, err := checkOrgExists(grafanaURL, adminUser, adminPass, "Para")
+	orgID, err = checkOrgExists(grafanaURL, adminUser, adminPass, "Para")
 	if err != nil {
-		log.Printf("Failed to do org check: %v", err)
+		log.Printf("Failed to check org existence: %v", err)
 		return
 	}
 
-	if !orgExists {
+	if orgID == 0 {
 		orgID, _ = createOrg(grafanaURL, adminUser, adminPass, "Para")
 	}
 
@@ -71,13 +76,13 @@ func main() {
 	}
 }
 
-// Function to check if the organization exists
-func checkOrgExists(grafanaURL, adminUser, adminPass, orgName string) (bool, error) {
+// Function to check if the organization exists and return orgID
+func checkOrgExists(grafanaURL, adminUser, adminPass, orgName string) (int, error) {
 	apiEndpoint := fmt.Sprintf("http://%s/api/orgs/name/%s", grafanaURL, orgName)
 
 	req, err := http.NewRequest("GET", apiEndpoint, nil)
 	if err != nil {
-		return false, fmt.Errorf("error creating HTTP request: %v", err)
+		return 0, fmt.Errorf("error creating HTTP request: %v", err)
 	}
 
 	req.SetBasicAuth(adminUser, adminPass)
@@ -85,21 +90,26 @@ func checkOrgExists(grafanaURL, adminUser, adminPass, orgName string) (bool, err
 	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
-		return false, fmt.Errorf("error sending HTTP request to check org existence: %v", err)
+		return 0, fmt.Errorf("error sending HTTP request to check org existence: %v", err)
 	}
 	defer resp.Body.Close()
 
 	if resp.StatusCode == http.StatusOK {
-		// Org exists
-		return true, nil
+		// Parse the organization response
+		var org OrgResponse
+		err := json.NewDecoder(resp.Body).Decode(&org)
+		if err != nil {
+			return 0, fmt.Errorf("error decoding org response: %v", err)
+		}
+		return org.ID, nil
 	}
 
 	if resp.StatusCode == http.StatusNotFound {
 		// Org does not exist
-		return false, nil
+		return 0, nil
 	}
 
-	return false, fmt.Errorf("unexpected status code while checking org: %d", resp.StatusCode)
+	return 0, fmt.Errorf("unexpected status code while checking org: %d", resp.StatusCode)
 }
 
 // Function to create the organization if it does not exist
@@ -112,12 +122,12 @@ func createOrg(grafanaURL, adminUser, adminPass, orgName string) (int, error) {
 
 	orgJSON, err := json.Marshal(org)
 	if err != nil {
-		return 1, fmt.Errorf("error marshalling organization JSON: %v", err)
+		return 0, fmt.Errorf("error marshalling organization JSON: %v", err)
 	}
 
 	req, err := http.NewRequest("POST", apiEndpoint, bytes.NewBuffer(orgJSON))
 	if err != nil {
-		return 1, fmt.Errorf("error creating HTTP request to create org: %v", err)
+		return 0, fmt.Errorf("error creating HTTP request to create org: %v", err)
 	}
 
 	req.SetBasicAuth(adminUser, adminPass)
@@ -126,15 +136,22 @@ func createOrg(grafanaURL, adminUser, adminPass, orgName string) (int, error) {
 	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
-		return 1, fmt.Errorf("error sending HTTP request to create org: %v", err)
+		return 0, fmt.Errorf("error sending HTTP request to create org: %v", err)
 	}
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-		return 1, fmt.Errorf("failed to create organization, status code: %d", resp.StatusCode)
+		return 0, fmt.Errorf("failed to create organization, status code: %d", resp.StatusCode)
 	}
 
-	return 2, nil
+	// Parse the created org response to get org ID
+	var orgResponse OrgResponse
+	err = json.NewDecoder(resp.Body).Decode(&orgResponse)
+	if err != nil {
+		return 0, fmt.Errorf("error decoding org creation response: %v", err)
+	}
+
+	return orgResponse.ID, nil
 }
 
 // Step 1: Create User via Grafana API
