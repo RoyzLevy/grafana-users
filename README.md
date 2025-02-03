@@ -5,7 +5,8 @@
 1. Docker
 2. Minikube
 3. Helm
-4. Grafana API
+4. Grafana API https://grafana.com/docs/grafana/latest/developers/http_api/admin/ https://grafana.com/docs/grafana/latest/developers/http_api/org/
+5. Golang
 
 ## Approaches
 
@@ -21,7 +22,7 @@ We will be using the second approach.
 
 ## Handling sensitive information
 
-We would handle information such as user names, passwords and roles in
+We would handle sensitive information in an external secret registry like Hashicorp Vault.
 
 ###### Installation manual
 
@@ -31,6 +32,7 @@ We would handle information such as user names, passwords and roles in
 2. Minikube
 3. kubectl
 4. Helm
+5. Golang
 
 ## Provision k8s cluster & test cluster
 
@@ -55,8 +57,21 @@ kubectl apply -f grafana-admin-secret.yaml
 
 kubectl apply -f users-list.yaml
 
+## create docker image and load to minikube
+
+docker build -t grafana-users-provision:1.0.0 .
+minikube image load grafana-users-provision:1.0.0
+
+## create k8s hook job
+
+kubectl apply -f grafana-users-provision-job.yaml
+
 ## deploy and verify grafana
 
 helm install grafana grafana/grafana --namespace grafana -f values.yaml
 kubectl get pods
 kubectl port-forward svc/grafana 3000:80
+
+## Improvements
+
+We could take care of updating user roles. Right now the user provision fails if a user already exists.

@@ -6,7 +6,7 @@ metadata:
 data:
   users.json: |
     [
-      { "username": "user1", "role": "Viewer", "email": "user1@example.com", "password": "generatedPassword123!" },
-      { "username": "user2", "role": "Editor", "email": "user2@example.com", "password": "anotherRandomPass456@" },
-      { "username": "user3", "role": "Admin", "email": "user3@example.com", "password": "anotherRandomPass123123@" }
+      { "name": "User 1", "login": "user1", "role": "Viewer", "email": "user1@example.com", "password": "generatedPassword123!" },
+      { "name": "User 2", "login": "user2", "role": "Editor", "email": "user2@example.com", "password": "anotherRandomPass456@" },
+      { "name": "User 3", "login": "user3", "role": "Admin", "email": "user3@example.com", "password": "anotherRandomPass123123@" }
     ]
