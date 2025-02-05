@@ -72,6 +72,6 @@ helm install grafana grafana/grafana --namespace grafana -f values.yaml
 kubectl get pods
 kubectl port-forward svc/grafana 3000:80
 
-## Improvements
+###### Improvements
 
 We could take care of updating user roles. Right now the user provision fails if a user already exists.

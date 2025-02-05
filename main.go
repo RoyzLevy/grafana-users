@@ -39,7 +39,7 @@ func main() {
 	}
 
 	// Set Grafana admin credentials
-	grafanaURL := "grafana:80"
+	grafanaURL := "localhost:3000" // Updated to use the full service name
 	adminUser := "admin"
 	adminPass := "mypassword"
 
@@ -53,7 +53,13 @@ func main() {
 	}
 
 	if orgID == 0 {
-		orgID, _ = createOrg(grafanaURL, adminUser, adminPass, "Para")
+		orgID, err = createOrg(grafanaURL, adminUser, adminPass, "Para")
+		if err != nil {
+			log.Printf("Created organization with id: %d", orgID)
+		} else {
+			log.Printf("Failed creating org: %v", err)
+			return
+		}
 	}
 
 	// Create users
@@ -189,6 +195,7 @@ func createUser(grafanaURL, adminUser, adminPass string, user User) error {
 func modifyUserRole(grafanaURL, adminUser, adminPass string, user User, orgID int) error {
 	// Embed the admin credentials directly in the URL
 	orgEndpoint := fmt.Sprintf("http://%s:%s@%s/api/orgs/%d/users", adminUser, adminPass, grafanaURL, orgID)
+	log.Printf("orgEndpoint: %s", orgEndpoint)
 
 	// Prepare role assignment JSON
 	roleAssignment := map[string]interface{}{
