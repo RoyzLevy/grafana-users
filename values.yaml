@@ -20,6 +20,18 @@ extraContainers: |
   - name: grafana-users-provision
     image: docker.io/library/grafana-users-provision:1.0.0
     imagePullPolicy: Never
+    command:
+      - sh
+      - -c
+      - |
+        echo "Waiting for Grafana to be ready..."
+        until wget -qO- http://localhost:3000/api/health > /dev/null 2>&1; do
+          echo "Grafana is not ready yet. Retrying in 100 seconds..."
+          sleep 60
+        done
+        echo "Grafana is ready. Starting user provisioning..."
+        /usr/local/bin/grafana-users-provision
+        echo "User provisioning complete. Exiting..."
     volumeMounts:
       - name: user-config
         mountPath: /etc/grafana/users.json
