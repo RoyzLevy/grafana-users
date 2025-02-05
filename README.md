@@ -4,9 +4,12 @@
 
 1. Docker
 2. Minikube
-3. Helm
-4. Grafana API (Admin and Org): https://grafana.com/docs/grafana/latest/developers/http_api/admin/ https://grafana.com/docs/grafana/latest/developers/http_api/org/
-5. Golang
+3. k8s configmaps and secrets
+4. Helm
+5. Grafana Org API: https://grafana.com/docs/grafana/latest/developers/http_api/org/
+6. Grafana Admin API: https://grafana.com/docs/grafana/latest/developers/http_api/admin/
+7. Golang
+8. Bash
 
 ## Approaches
 
@@ -37,6 +40,9 @@ values.yaml is the file configuring our helm chart grafana installation and spec
 - persistence so we can have the data saved even if the grafana pod restarts.
 - extraContainers for our sidecar provision container that uses our dockerized app.
 - extraContainerVolumes for our user list mounting to the init container.
+
+When runnig helm install helm will use this config to customize our grafana installation and add the provision to it.
+Installation steps are all added up to a single shell script called ./run-and-provision.sh
 
 ## Improvements
 
