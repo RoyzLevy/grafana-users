@@ -31,6 +31,11 @@ type OrgResponse struct {
 func main() {
 	log.Println("Starting Grafana user provisioning...")
 
+	// Config url and admin creds
+	grafanaURL := "localhost:3000"
+	adminUser := os.Getenv("GRAFANA_USER")
+	adminPass := os.Getenv("GRAFANA_PASSWORD")
+
 	// Load users.json file
 	filePath := "/etc/grafana/users.json"
 	fileData, err := os.ReadFile(filePath)
@@ -44,10 +49,6 @@ func main() {
 	if err != nil {
 		log.Fatalf("Error parsing users JSON: %v", err)
 	}
-
-	grafanaURL := "localhost:3000"
-	adminUser := "admin"
-	adminPass := "mypassword"
 
 	var orgID int
 

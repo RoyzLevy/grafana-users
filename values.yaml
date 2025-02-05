@@ -30,15 +30,23 @@ extraContainers: |
           sleep 60
         done
         echo "Grafana is ready. Starting user provisioning..."
+        export GRAFANA_USER=$(cat /etc/grafana-admin-secret/admin-user)
+        export GRAFANA_PASSWORD=$(cat /etc/grafana-admin-secret/admin-password)
         /usr/local/bin/grafana-users-provision
         echo "User provisioning complete. Exiting..."
     volumeMounts:
       - name: user-config
         mountPath: /etc/grafana/users.json
         subPath: users.json
+      - name: grafana-admin-secret
+        mountPath: /etc/grafana-admin-secret
+        readOnly: true
 
 # Define volumes for the additional containers (not mounted directly in Grafana pod)
 extraContainerVolumes:
   - name: user-config
     configMap:
       name: grafana-user-list
+  - name: grafana-admin-secret
+    secret:
+      secretName: grafana-admin-secret
